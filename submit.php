@@ -75,8 +75,7 @@ $skin = htmlspecialchars($skin, ENT_QUOTES, 'UTF-8');
 </head>
 <body>
   <div class="result-card">
-    <h2>Terima kasih <?= $nama; ?>!</h2>
-    <p>ID Kamu: <strong><?= $id; ?></strong></p>
+    <h2>Terima kasih <?= $id; ?>!</h2>
     <p>Kamu mendapatkan skin:</p>
     <img src="img/<?= strtolower($skin); ?>.png" alt="<?= $skin; ?>" class="skin-img">
     <h3><?= $skin; ?></h3>
